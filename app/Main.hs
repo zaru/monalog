@@ -4,7 +4,7 @@ module Main where
 -- 指定しないとグローバルにすべて展開される
 -- import qualified Foo as F と別名をつけることもできる
 import Control.Monad (forever)
-import Network.Socket (accept, bind, listen, socket)
+import Network.Socket
 
 main :: IO ()
 main = do

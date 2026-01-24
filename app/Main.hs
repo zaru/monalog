@@ -10,7 +10,7 @@ main :: IO ()
 main = do
   sock <- serveSocket 3000
   -- listenは指定ソケットで待機接続数を指定
-  listen sock 5
+  listen sock maxListenQueue
   -- memo: $は右側の式をすべて評価してから、左側の関数に渡す、カッコ () の代わり
   -- forever は無限ループする
   forever $ do

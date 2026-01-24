@@ -11,3 +11,7 @@ ormolu -i **/*.hs
 
 ormolu -m check **/*.hs
 ```
+
+```bash
+hlint app
+```

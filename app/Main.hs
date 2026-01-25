@@ -6,8 +6,10 @@ module Main where
 import Control.Monad (forever)
 import Network.Socket
 
+-- ()はvoid相当、ここではなにも入ってないIOを返すmain関数である
 main :: IO ()
 main = do
+  -- do式の中の <- はIOアクション実行後の結果を取り出す（ドロー）
   sock <- serveSocket 3000
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue
@@ -20,8 +22,14 @@ main = do
     putStrLn $ "接続: " ++ show addr
     close conn
 
+-- PortNumberを引数とし、Scoket型のIOコンストラクタを返す関数定義
 serveSocket :: PortNumber -> IO Socket
 serveSocket port = do
+  -- AF_INETはrequestパッケージのIPv4定義
+  -- Streamはrequestパッケージのデータ方式（ストリームはTCP）
+  -- defaultProtocolはrequestパッケージのプロトコル番号（OSにお任せ）
   sock <- socket AF_INET Stream defaultProtocol
+  -- 作成したSocketをポートにバインドする
+  -- ホストアドレスは文字列では指定できず、tupleToHostAddressを使ってタプル指定する
   bind sock (SockAddrInet port (tupleToHostAddress (0, 0, 0, 0)))
   return sock

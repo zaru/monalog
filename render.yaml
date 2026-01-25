@@ -5,3 +5,6 @@ services:
     plan: free
     region: singapore
     healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 3000

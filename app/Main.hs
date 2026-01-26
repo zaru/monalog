@@ -32,7 +32,10 @@ main = withSocketsDo $ bracket (serveSocket 3000) close $ \sock -> do
     -- HTMLファイルを読み込む
     -- System IOのreadFileだと日本語が文字化する
     -- Data.ByteString.Char8だとバイトのままだ扱える
-    body <- B.readFile "./html/index.html"
+--    TODO: HTMLの中にパースしたMarkdownデータを埋め込む
+--    body <- B.readFile "./html/index.html"
+    mdFile <- B.readFile "./html/index.md"
+    let body = B.concat $ tagged $ B.lines mdFile
     -- 送信データサイズを計算する
     let len = B.length body
     -- ヘッダーを送信しないとブラウザで表示されない
@@ -41,6 +44,16 @@ main = withSocketsDo $ bracket (serveSocket 3000) close $ \sock -> do
     sendAll conn $ B.concat [header, body]
 
     close conn
+
+tagged :: [B.ByteString] -> [B.ByteString]
+-- mapにtransformという名前の関数を渡す where を使うことで複数行で書きやすい
+tagged = map transform
+  where
+    transform x = case B.stripPrefix (B.pack "## ") x of
+      -- prefixが見つかったら、前後を <h2> </h2> で挟む
+      Just rest -> B.pack "<h2>" <> rest <> B.pack "</h2>"
+      -- 見つからなければ段落扱い
+      Nothing -> B.pack "<p>" <> x <> B.pack "</p>"
 
 -- PortNumberを引数とし、Scoket型のIOコンストラクタを返す関数定義
 serveSocket :: PortNumber -> IO Socket

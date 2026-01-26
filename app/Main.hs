@@ -4,15 +4,17 @@ module Main where
 -- 指定しないとグローバルにすべて展開される
 -- import qualified Foo as F と別名をつけることもできる
 import Control.Monad (forever)
+import Control.Exception (bracket)
 import Data.ByteString.Char8 qualified as B
 import Network.Socket
 import Network.Socket.ByteString
 
 -- ()はvoid相当、ここではなにも入ってないIOを返すmain関数である
 main :: IO ()
-main = do
-  -- do式の中の <- はIOアクション実行後の結果を取り出す（ドロー）
-  sock <- serveSocket 3000
+-- bracketで確保したソケットをクローズする処理を定義できる
+-- 関数定義 → bracket リソース確保 リソース解放 リソースを使った処理
+-- \sockのバックスラッシュはラムダ式の始まりを表す do 式のサーバ処理をラムダとして渡している
+main = withSocketsDo $ bracket (serveSocket 3000) close $ \sock -> do
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue
   -- memo: $は右側の式をすべて評価してから、左側の関数に渡す、カッコ () の代わり
@@ -47,6 +49,9 @@ serveSocket port = do
   -- Streamはrequestパッケージのデータ方式（ストリームはTCP）
   -- defaultProtocolはrequestパッケージのプロトコル番号（OSにお任せ）
   sock <- socket AF_INET Stream defaultProtocol
+  -- SO_REUSEADDRを設定してポートを即座に再利用可能にする
+  -- これを設定するとTIME_WAITであっても即座に再利用できるらしい
+  setSocketOption sock ReuseAddr 1
   -- 作成したSocketをポートにバインドする
   -- ホストアドレスは文字列では指定できず、tupleToHostAddressを使ってタプル指定する
   bind sock (SockAddrInet port (tupleToHostAddress (0, 0, 0, 0)))

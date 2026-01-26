@@ -27,13 +27,14 @@ main = do
     msg <- recv conn 1024
     print msg
 
-    -- 文字列をByteStringにするためにpackを利用する
-    -- Data.ByteString.Char8をimportするとputStrLnと名前衝突するのでエイリアスを当てる
-    let body = B.pack "Hello haskell!"
+    -- HTMLファイルを読み込む
+    -- System IOのreadFileだと日本語が文字化する
+    -- Data.ByteString.Char8だとバイトのままだ扱える
+    body <- B.readFile "./html/index.html"
     -- 送信データサイズを計算する
     let len = B.length body
     -- ヘッダーを送信しないとブラウザで表示されない
-    let header = B.pack $ "HTTP/1.0 200 OK\r\nContent-Length: " ++ show len ++ "\r\nContent-Type: text/plain\r\n\r\n"
+    let header = B.pack $ "HTTP/1.1 200 OK\r\nContent-Length: " ++ show len ++ "\r\nContent-Type: text/html\r\n\r\n"
     -- sendAllでヘッダとボディのByteStringを結合して返す
     sendAll conn $ B.concat [header, body]
 

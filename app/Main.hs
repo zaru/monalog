@@ -4,9 +4,9 @@ module Main where
 -- 指定しないとグローバルにすべて展開される
 -- import qualified Foo as F と別名をつけることもできる
 import Control.Monad (forever)
+import Data.ByteString.Char8 qualified as B
 import Network.Socket
 import Network.Socket.ByteString
-import qualified Data.ByteString.Char8 as B
 
 -- ()はvoid相当、ここではなにも入ってないIOを返すmain関数である
 main :: IO ()

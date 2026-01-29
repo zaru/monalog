@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-} --GHC拡張で、リテラル文字列をStringだけでなくTextやByteStringで扱える
+
 module Main where
 
 -- ライブラリのインポート時に関数を指定することができる
@@ -8,13 +10,16 @@ import Control.Exception (bracket)
 import Data.ByteString.Char8 qualified as B
 import Network.Socket
 import Network.Socket.ByteString
+import Data.Text.IO qualified as TO
+import Data.Text qualified as T
+import Data.Text.Encoding
 
 -- ()はvoid相当、ここではなにも入ってないIOを返すmain関数である
 main :: IO ()
 -- bracketで確保したソケットをクローズする処理を定義できる
 -- 関数定義 → bracket リソース確保 リソース解放 リソースを使った処理
 -- \sockのバックスラッシュはラムダ式の始まりを表す do 式のサーバ処理をラムダとして渡している
-main = withSocketsDo $ bracket (serveSocket 3000) close $ \sock -> do
+main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue
   -- memo: $は右側の式をすべて評価してから、左側の関数に渡す、カッコ () の代わり
@@ -29,31 +34,35 @@ main = withSocketsDo $ bracket (serveSocket 3000) close $ \sock -> do
     msg <- recv conn 1024
     print msg
 
-    -- HTMLファイルを読み込む
-    -- System IOのreadFileだと日本語が文字化する
-    -- Data.ByteString.Char8だとバイトのままだ扱える
---    TODO: HTMLの中にパースしたMarkdownデータを埋め込む
---    body <- B.readFile "./html/index.html"
-    mdFile <- B.readFile "./html/index.md"
-    let body = B.concat $ tagged $ B.lines mdFile
+    -- HTMLテンプレートとブログ記事Markdownを読み込む
+    -- ByteStringだと文字列操作が煩雑なので、ByteStringを継承する？Textを利用する
+    -- など、System IOのreadFileだと日本語が文字化する
+    template <- TO.readFile "./html/index.html"
+    mdFile <- TO.readFile "./html/index.md"
+    -- Markdownをパースして文字列結合する
+    let body = T.concat $ tagged $ T.lines mdFile
+    -- テンプレートを置き換え
+    let html = T.replace "{__INDEX__}" body template
     -- 送信データサイズを計算する
-    let len = B.length body
+    let len = T.show $ B.length $ encodeUtf8 html
     -- ヘッダーを送信しないとブラウザで表示されない
-    let header = B.pack $ "HTTP/1.1 200 OK\r\nContent-Length: " ++ show len ++ "\r\nContent-Type: text/html\r\n\r\n"
+    let header = "HTTP/1.1 200 OK\r\nContent-Length: " <> len <> "\r\nContent-Type: text/html\r\n\r\n"
     -- sendAllでヘッダとボディのByteStringを結合して返す
-    sendAll conn $ B.concat [header, body]
+    -- TextはText.encode.encodeUtf8でByteStringに変換できる
+    sendAll conn $ encodeUtf8 $ T.concat [header, html]
 
     close conn
 
-tagged :: [B.ByteString] -> [B.ByteString]
+-- 超簡易Markdownパーサ
+tagged :: [T.Text] -> [T.Text]
 -- mapにtransformという名前の関数を渡す where を使うことで複数行で書きやすい
 tagged = map transform
   where
-    transform x = case B.stripPrefix (B.pack "## ") x of
+    transform x = case T.stripPrefix "## " x of
       -- prefixが見つかったら、前後を <h2> </h2> で挟む
-      Just rest -> B.pack "<h2>" <> rest <> B.pack "</h2>"
+      Just rest -> "<h2>" <> rest <> "</h2>"
       -- 見つからなければ段落扱い
-      Nothing -> B.pack "<p>" <> x <> B.pack "</p>"
+      Nothing -> "<p>" <> x <> "</p>"
 
 -- PortNumberを引数とし、Scoket型のIOコンストラクタを返す関数定義
 serveSocket :: PortNumber -> IO Socket

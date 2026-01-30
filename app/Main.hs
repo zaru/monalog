@@ -61,9 +61,34 @@ tagged = map transform
   where
     transform x = case T.stripPrefix "## " x of
       -- prefixが見つかったら、前後を <h2> </h2> で挟む
-      Just rest -> "<h2>" <> rest <> "</h2>"
+      -- <code>対応しているがこういう愚直な呼び出し方で良いのだろうか？
+      Just rest -> "<h2>" <> taggedCode(rest) <> "</h2>"
       -- 見つからなければ段落扱い
-      Nothing -> "<p>" <> x <> "</p>"
+      Nothing -> "<p>" <> taggedCode(x) <> "</p>"
+
+-- <code>をラップするパーサ
+-- 再帰処理をして頑張っているが…ダサい感じがある
+taggedCode :: T.Text -> T.Text
+taggedCode text
+  -- | のパイプでif-then-elseよりもシンプルに条件分岐できる
+  -- 最後の = の右辺がリターンされる値
+  | T.null text = ""
+  -- otherwiseは | でガードを使った条件分岐の最後のケース
+  | otherwise =
+    let (left, right) = T.breakOn "`" text
+    -- let...in は let を一時的に使うための区切られたスコープ
+    in if T.null right
+       then text
+       else
+         let right1 = T.drop 1 right
+             (code, rest) = T.breakOn "`" right1
+         in if T.null rest
+         -- 閉じタグのバックティックが見つからないパターンのときはそのまま返す
+         then text
+         else
+           -- 最後のrestを再起処理し複数のcodeに対応
+           -- $は優先順位が低いため () で囲って先にdrop処理する
+           left <> "<code>" <> code <> "</code>" <> taggedCode (T.drop 1 rest)
 
 -- PortNumberを引数とし、Scoket型のIOコンストラクタを返す関数定義
 serveSocket :: PortNumber -> IO Socket

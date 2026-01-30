@@ -10,6 +10,7 @@ module Main where
 import Control.Exception (bracket)
 import Control.Monad (forever)
 import Data.ByteString.Char8 qualified as B
+import Data.Maybe (isJust)
 import Data.Text qualified as T
 import Data.Text.Encoding
 import Data.Text.IO qualified as TO
@@ -43,7 +44,6 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     template <- TO.readFile "./html/index.html"
     mdFile <- TO.readFile "./html/index.md"
     -- Markdownをパースして文字列結合する
---    let body = T.concat $ tagged $ T.lines mdFile
     let body = T.concat $ taggedCodeBlock $ T.lines mdFile
     -- テンプレートを置き換え
     let html = T.replace "{__INDEX__}" body template
@@ -62,19 +62,22 @@ tagged :: T.Text -> T.Text
 tagged x = case T.stripPrefix "## " x of
   -- prefixが見つかったら、前後を <h2> </h2> で挟む
   -- <code>対応しているがこういう愚直な呼び出し方で良いのだろうか？
-  Just rest -> "<h2>" <> taggedCode (rest) <> "</h2>"
+  Just rest -> "<h2>" <> taggedCode rest <> "</h2>"
   -- 見つからなければ段落扱い
-  Nothing -> "<p>" <> taggedCode (x) <> "</p>"
+  Nothing -> "<p>" <> taggedCode x <> "</p>"
 
 taggedCodeBlock :: [T.Text] -> [T.Text]
 taggedCodeBlock [] = []
 taggedCodeBlock (x : xs)
-  | T.stripPrefix "```" x /= Nothing =
+  -- isJustを使うとMaybeが値を持っているかをチェックできる /= Nothing の比較より楽
+  | isJust (T.stripPrefix "```" x) =
       let (block, rest) = break (T.isPrefixOf "```") xs
-       in if length rest > 0
-            then ["<pre><code>" <> T.intercalate "\n" block <> "</code></pre>"] ++ taggedCodeBlock (tail rest)
+       in if not (null rest)
+            -- 配列の結合は : もしくは ++ でやるが先頭追加なら : が良いらしい
+            -- [1] : [2] ++ [3] → [1,2,3]
+            then ("<pre><code>" <> T.intercalate "\n" block <> "</code></pre>") : taggedCodeBlock (tail rest)
             else xs
-  | otherwise = [tagged x] ++ taggedCodeBlock xs
+  | otherwise = tagged x : taggedCodeBlock xs
 
 -- <code>をラップするパーサ
 -- 再帰処理をして頑張っているが…ダサい感じがある

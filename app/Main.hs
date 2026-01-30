@@ -22,6 +22,7 @@ main :: IO ()
 main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue
+  putStrLn "Starting Monalog http://localhost:8000"
   -- memo: $は右側の式をすべて評価してから、左側の関数に渡す、カッコ () の代わり
   -- forever は無限ループする
   forever $ do

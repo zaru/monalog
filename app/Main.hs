@@ -41,7 +41,8 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     template <- TO.readFile "./html/index.html"
     mdFile <- TO.readFile "./html/index.md"
     -- Markdownをパースして文字列結合する
-    let body = T.concat $ tagged $ T.lines mdFile
+--    let body = T.concat $ tagged $ T.lines mdFile
+    let body = T.concat $ taggedCodeBlock $ T.lines mdFile
     -- テンプレートを置き換え
     let html = T.replace "{__INDEX__}" body template
     -- 送信データサイズを計算する
@@ -55,16 +56,23 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     close conn
 
 -- 超簡易Markdownパーサ
-tagged :: [T.Text] -> [T.Text]
--- mapにtransformという名前の関数を渡す where を使うことで複数行で書きやすい
-tagged = map transform
-  where
-    transform x = case T.stripPrefix "## " x of
-      -- prefixが見つかったら、前後を <h2> </h2> で挟む
-      -- <code>対応しているがこういう愚直な呼び出し方で良いのだろうか？
-      Just rest -> "<h2>" <> taggedCode(rest) <> "</h2>"
-      -- 見つからなければ段落扱い
-      Nothing -> "<p>" <> taggedCode(x) <> "</p>"
+tagged :: T.Text -> T.Text
+tagged  x = case T.stripPrefix "## " x of
+  -- prefixが見つかったら、前後を <h2> </h2> で挟む
+  -- <code>対応しているがこういう愚直な呼び出し方で良いのだろうか？
+  Just rest -> "<h2>" <> taggedCode(rest) <> "</h2>"
+  -- 見つからなければ段落扱い
+  Nothing -> "<p>" <> taggedCode(x) <> "</p>"
+
+taggedCodeBlock :: [T.Text] -> [T.Text]
+taggedCodeBlock [] = []
+taggedCodeBlock (x:xs)
+  | T.stripPrefix "```" x /= Nothing =
+    let (block, rest) = break (T.isPrefixOf "```") xs
+    in if length rest > 0
+       then ["<pre><code>" <> T.intercalate "\n" block <> "</code></pre>"] ++ taggedCodeBlock (tail rest)
+       else xs
+  | otherwise = [tagged x] ++ taggedCodeBlock xs
 
 -- <code>をラップするパーサ
 -- 再帰処理をして頑張っているが…ダサい感じがある

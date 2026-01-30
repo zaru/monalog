@@ -1,18 +1,20 @@
-{-# LANGUAGE OverloadedStrings #-} --GHC拡張で、リテラル文字列をStringだけでなくTextやByteStringで扱える
+-- GHC拡張で、リテラル文字列をStringだけでなくTextやByteStringで扱える
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 -- ライブラリのインポート時に関数を指定することができる
 -- 指定しないとグローバルにすべて展開される
 -- import qualified Foo as F と別名をつけることもできる
-import Control.Monad (forever)
+
 import Control.Exception (bracket)
+import Control.Monad (forever)
 import Data.ByteString.Char8 qualified as B
-import Network.Socket
-import Network.Socket.ByteString
-import Data.Text.IO qualified as TO
 import Data.Text qualified as T
 import Data.Text.Encoding
+import Data.Text.IO qualified as TO
+import Network.Socket
+import Network.Socket.ByteString
 
 -- ()はvoid相当、ここではなにも入ってないIOを返すmain関数である
 main :: IO ()
@@ -57,46 +59,46 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
 
 -- 超簡易Markdownパーサ
 tagged :: T.Text -> T.Text
-tagged  x = case T.stripPrefix "## " x of
+tagged x = case T.stripPrefix "## " x of
   -- prefixが見つかったら、前後を <h2> </h2> で挟む
   -- <code>対応しているがこういう愚直な呼び出し方で良いのだろうか？
-  Just rest -> "<h2>" <> taggedCode(rest) <> "</h2>"
+  Just rest -> "<h2>" <> taggedCode (rest) <> "</h2>"
   -- 見つからなければ段落扱い
-  Nothing -> "<p>" <> taggedCode(x) <> "</p>"
+  Nothing -> "<p>" <> taggedCode (x) <> "</p>"
 
 taggedCodeBlock :: [T.Text] -> [T.Text]
 taggedCodeBlock [] = []
-taggedCodeBlock (x:xs)
+taggedCodeBlock (x : xs)
   | T.stripPrefix "```" x /= Nothing =
-    let (block, rest) = break (T.isPrefixOf "```") xs
-    in if length rest > 0
-       then ["<pre><code>" <> T.intercalate "\n" block <> "</code></pre>"] ++ taggedCodeBlock (tail rest)
-       else xs
+      let (block, rest) = break (T.isPrefixOf "```") xs
+       in if length rest > 0
+            then ["<pre><code>" <> T.intercalate "\n" block <> "</code></pre>"] ++ taggedCodeBlock (tail rest)
+            else xs
   | otherwise = [tagged x] ++ taggedCodeBlock xs
 
 -- <code>をラップするパーサ
 -- 再帰処理をして頑張っているが…ダサい感じがある
 taggedCode :: T.Text -> T.Text
 taggedCode text
-  -- | のパイプでif-then-elseよりもシンプルに条件分岐できる
+  -- \| のパイプでif-then-elseよりもシンプルに条件分岐できる
   -- 最後の = の右辺がリターンされる値
   | T.null text = ""
   -- otherwiseは | でガードを使った条件分岐の最後のケース
   | otherwise =
-    let (left, right) = T.breakOn "`" text
-    -- let...in は let を一時的に使うための区切られたスコープ
-    in if T.null right
-       then text
-       else
-         let right1 = T.drop 1 right
-             (code, rest) = T.breakOn "`" right1
-         in if T.null rest
-         -- 閉じタグのバックティックが見つからないパターンのときはそのまま返す
-         then text
-         else
-           -- 最後のrestを再起処理し複数のcodeに対応
-           -- $は優先順位が低いため () で囲って先にdrop処理する
-           left <> "<code>" <> code <> "</code>" <> taggedCode (T.drop 1 rest)
+      let (left, right) = T.breakOn "`" text
+       in -- let...in は let を一時的に使うための区切られたスコープ
+          if T.null right
+            then text
+            else
+              let right1 = T.drop 1 right
+                  (code, rest) = T.breakOn "`" right1
+               in if T.null rest
+                    -- 閉じタグのバックティックが見つからないパターンのときはそのまま返す
+                    then text
+                    else
+                      -- 最後のrestを再起処理し複数のcodeに対応
+                      -- \$は優先順位が低いため () で囲って先にdrop処理する
+                      left <> "<code>" <> code <> "</code>" <> taggedCode (T.drop 1 rest)
 
 -- PortNumberを引数とし、Scoket型のIOコンストラクタを返す関数定義
 serveSocket :: PortNumber -> IO Socket

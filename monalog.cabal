@@ -58,6 +58,7 @@ library
     import:           warnings
     -- 外部（テストや実行ファイル）から公開するモジュール
     exposed-modules:  Monalog.Markdown
+                    , Monalog.Markdown.Parser
     -- ライブラリが依存するパッケージ
     build-depends:    base ^>=4.18.3.0
                     , bytestring ^>=0.11.5.4

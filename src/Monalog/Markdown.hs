@@ -39,17 +39,13 @@ taggedCode text
   | T.null text = ""
   -- otherwiseは | でガードを使った条件分岐の最後のケース
   | otherwise =
-      let (left, right) = T.breakOn "`" text
-       in -- let...in は let を一時的に使うための区切られたスコープ
-          if T.null right
-            then text
-            else
-              let right1 = T.drop 1 right
-                  (code, rest) = T.breakOn "`" right1
-               in if T.null rest
-                    -- 閉じタグのバックティックが見つからないパターンのときはそのまま返す
-                    then text
-                    else
-                      -- 最後のrestを再起処理し複数のcodeに対応
-                      -- \$は優先順位が低いため () で囲って先にdrop処理する
-                      left <> "<code>" <> code <> "</code>" <> taggedCode (T.drop 1 rest)
+      case T.breakOn "`" text of
+        (_, "") -> text
+        (left, right) -> case T.breakOn "`" $ T.drop 1 right of
+          (_, "") -> text
+          (code, rest) ->
+            left
+              <> "<code>"
+              <> code
+              <> "</code>"
+              <> taggedCode (T.drop 1 rest)

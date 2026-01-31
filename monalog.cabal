@@ -54,6 +54,19 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
+library
+    import:           warnings
+    -- 外部（テストや実行ファイル）から公開するモジュール
+    exposed-modules:  Monalog.Markdown
+    -- ライブラリが依存するパッケージ
+    build-depends:    base ^>=4.18.3.0
+                    , bytestring ^>=0.11.5.4
+                    , text ^>=2.1.3
+                    , network ^>=3.2.8.0
+    -- ソースコードの場所
+    hs-source-dirs:   src
+    default-language: GHC2021
+
 executable monalog
     -- Import common warning flags.
     import:           warnings
@@ -62,7 +75,7 @@ executable monalog
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules:    Monalog.Markdown
+    -- other-modules:
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -72,10 +85,23 @@ executable monalog
                       , text ^>=2.1.3
                       , network ^>=3.2.8.0
                       , base ^>=4.18.3.0
+                      , monalog
 
     -- Directories containing source files.
     hs-source-dirs:   app
-                      , src
 
     -- Base language which the package is written in.
+    default-language: GHC2021
+
+test-suite monalog-test
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          Main.hs
+    other-modules:    Monalog.MarkdownTest
+    hs-source-dirs:   test
+    build-depends:    base ^>=4.18.3.0
+                    , HUnit
+                    , tasty
+                    , tasty-hunit
+                    , monalog
     default-language: GHC2021

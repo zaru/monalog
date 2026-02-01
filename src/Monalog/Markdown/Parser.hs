@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Monalog.Markdown.Parser (parseMarkdown) where
+-- Markdownの型をエクスポート
+-- (..)で指定型のすべてのコンストラクタをエクスポートできる
+module Monalog.Markdown.Parser (parseMarkdown, Markdown, Block (..), Inline (..)) where
 
 import Data.Text (Text) -- Text型だけエイリアスなしで使えるようにする
 import Data.Text qualified as T -- それ以外はPreludeとかぶらないようにエイリアス
@@ -26,10 +28,10 @@ parseLines :: [Text] -> Markdown
 parseLines [] = []
 parseLines (currentLine : restLines)
   | T.isPrefixOf "```" currentLine =
-    case break (T.isPrefixOf "```") restLines of
-      (_, []) -> [Paragraph [Plain currentLine]]
-      (block, rest) -> CodeBlock block : parseLines (tail rest)
-  | T.isPrefixOf "## " currentLine = Heading 2 (parseInline currentLine) : parseLines restLines
+      case break (T.isPrefixOf "```") restLines of
+        (_, []) -> [Paragraph [Plain currentLine]]
+        (block, rest) -> CodeBlock block : parseLines (tail rest)
+  | T.isPrefixOf "## " currentLine = Heading 2 (parseInline $ T.drop 3 currentLine) : parseLines restLines
   | otherwise = Paragraph (parseInline currentLine) : parseLines restLines
 
 -- Markdown特殊文字判定
@@ -41,11 +43,9 @@ parseInline :: Text -> [Inline]
 parseInline text
   | T.null text = []
   | otherwise =
-    let (plain, rest) = T.break isSpecialChar text
-    in
-      ([Plain plain | not (T.null plain)])
-      ++
-      parseSpecial rest
+      let (plain, rest) = T.break isSpecialChar text
+       in ([Plain plain | not (T.null plain)])
+            ++ parseSpecial rest
 
 -- Markdown特殊文字で始まるテキストがわたる
 parseSpecial :: Text -> [Inline]
@@ -56,7 +56,7 @@ parseSpecial text =
       case c of
         '`' -> parseCode text
         '*' -> [Strong [Plain text]] -- TODO
-        _   -> Plain (T.singleton c) : parseInline next
+        _ -> Plain (T.singleton c) : parseInline next
 
 -- ` 始まりのテキストがわたる
 parseCode :: Text -> [Inline]
@@ -64,6 +64,5 @@ parseCode text =
   case T.breakOn "`" (T.drop 1 text) of
     (_, "") -> [Plain text] -- 閉じタグなしなのでPlain
     (code, next) -> Code code : parseInline (T.drop 1 next)
-
 
 -- parseMarkdown "## h2\np1\np2`code1`bar`code2`desu\n```\nthis\nis block\n```\nlast"

@@ -1,3 +1,4 @@
+import Monalog.Markdown.ParserTest qualified
 import Monalog.MarkdownTest qualified
 import Test.Tasty
 
@@ -6,4 +7,4 @@ main =
   defaultMain $
     testGroup
       "All Tests"
-      [Monalog.MarkdownTest.tests]
+      [Monalog.MarkdownTest.tests, Monalog.Markdown.ParserTest.tests]

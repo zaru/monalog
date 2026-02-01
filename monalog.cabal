@@ -59,6 +59,7 @@ library
     -- 外部（テストや実行ファイル）から公開するモジュール
     exposed-modules:  Monalog.Markdown
                     , Monalog.Markdown.Parser
+                    , Monalog.Markdown.Render
     -- ライブラリが依存するパッケージ
     build-depends:    base ^>=4.18.3.0
                     , bytestring ^>=0.11.5.4
@@ -100,6 +101,7 @@ test-suite monalog-test
     main-is:          Main.hs
     other-modules:    Monalog.MarkdownTest
                     , Monalog.Markdown.ParserTest
+                    , Monalog.Markdown.RenderTest
     hs-source-dirs:   test
     build-depends:    base ^>=4.18.3.0
                     , HUnit

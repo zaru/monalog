@@ -13,7 +13,8 @@ import Data.ByteString.Char8 qualified as B
 import Data.Text qualified as T
 import Data.Text.Encoding
 import Data.Text.IO qualified as TO
-import Monalog.Markdown
+import Monalog.Markdown.Parser
+import Monalog.Markdown.Render
 import Network.Socket
 import Network.Socket.ByteString
 
@@ -44,7 +45,7 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     template <- TO.readFile "./html/index.html"
     mdFile <- TO.readFile "./html/index.md"
     -- Markdownをパースして文字列結合する
-    let body = T.concat $ taggedCodeBlock $ T.lines mdFile
+    let body = renderHTML $ parseMarkdown mdFile
     -- テンプレートを置き換え
     let html = T.replace "{__INDEX__}" body template
     -- 送信データサイズを計算する

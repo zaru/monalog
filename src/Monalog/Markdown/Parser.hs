@@ -2,7 +2,7 @@
 
 -- Markdownの型をエクスポート
 -- (..)で指定型のすべてのコンストラクタをエクスポートできる
-module Monalog.Markdown.Parser (parseMarkdown, Markdown, Block (..), Inline (..)) where
+module Monalog.Markdown.Parser (parseMarkdown, Markdown, Block (..), Inline (..), Level (..)) where
 
 import Data.Text (Text) -- Text型だけエイリアスなしで使えるようにする
 import Data.Text qualified as T -- それ以外はPreludeとかぶらないようにエイリアス
@@ -13,8 +13,10 @@ data Inline
   | Strong [Inline] -- 再帰にして<strong>内に他のInlineを埋め込めるようにする
   deriving (Show, Eq)
 
+data Level = One | Two deriving (Show, Eq)
+
 data Block
-  = Heading Int [Inline]
+  = Heading Level [Inline]
   | Paragraph [Inline]
   | CodeBlock [Text]
   deriving (Show, Eq)
@@ -31,7 +33,7 @@ parseLines (currentLine : restLines)
       case break (T.isPrefixOf "```") restLines of
         (_, []) -> [Paragraph [Plain currentLine]]
         (block, rest) -> CodeBlock block : parseLines (tail rest)
-  | T.isPrefixOf "## " currentLine = Heading 2 (parseInline $ T.drop 3 currentLine) : parseLines restLines
+  | T.isPrefixOf "## " currentLine = Heading Two (parseInline $ T.drop 3 currentLine) : parseLines restLines
   | otherwise = Paragraph (parseInline currentLine) : parseLines restLines
 
 -- Markdown特殊文字判定

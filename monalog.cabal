@@ -57,8 +57,7 @@ common warnings
 library
     import:           warnings
     -- 外部（テストや実行ファイル）から公開するモジュール
-    exposed-modules:  Monalog.Markdown
-                    , Monalog.Markdown.Parser
+    exposed-modules:  Monalog.Markdown.Parser
                     , Monalog.Markdown.Render
     -- ライブラリが依存するパッケージ
     build-depends:    base ^>=4.18.3.0
@@ -99,8 +98,7 @@ test-suite monalog-test
     import:           warnings
     type:             exitcode-stdio-1.0
     main-is:          Main.hs
-    other-modules:    Monalog.MarkdownTest
-                    , Monalog.Markdown.ParserTest
+    other-modules:    Monalog.Markdown.ParserTest
                     , Monalog.Markdown.RenderTest
     hs-source-dirs:   test
     build-depends:    base ^>=4.18.3.0

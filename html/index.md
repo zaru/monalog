@@ -1,3 +1,31 @@
+## Markdown構文木とレンダー
+2026/02/01
+以前作成したMarkdownパーサはパーサと言うよりコンバーターみたいなものでMarkdownファイルを読み込んで、その場でHTMLに変換しているだけのものだった。これだと今後の拡張がどう考えても大変そう。ということで、構文木、いわゆるASTを作ってからレンダリングするように変更した。
+ASTをHaskellの型で表現するには代数的データ型というのを使うらしい。なんだよ代数って。
+実装の一部、インラインについて抜粋する。
+
+```
+data Inline
+  = Plain Text
+  | Code Text
+  | Strong [Inline] -- 再帰にして strong 内に他のInlineを埋め込めるようにする
+  deriving (Show, Eq)
+```
+
+プレーンテキスト、`<code>` と `<strong>` について定義。`<strong>` は中に `<strong><code>foo</code></strong>` というネスト構造が考えられるので再帰定義にしている。
+
+この代数的データ型はレンダリングのときに力を発揮する。型の条件分岐がスッキリ書ける。
+
+```
+renderInline :: Inline -> Text
+renderInline (Plain line) = line
+renderInline (Code line) = "<code>" <> line <> "</code>"
+renderInline (Strong line) = "<strong>" <> T.concat (map renderInline line) <> "</strong>"
+```
+
+このコードをすっと書けた時、正直感動した。JavaScriptでこれを書こうとすると、どうしても見た目が野暮ったくなるし、途中で記載ミスをしてしまいそうだ。でもHaskellは書き漏れたパターンがあったら警告してくれる。すごい。
+
+
 ## コードブロックをサポート
 2026/01/30
 Markdownパーサを改良しコードブロックに対応した。めでたい。

@@ -14,9 +14,13 @@ renderBlock :: Block -> Text
 renderBlock (Heading One line) = "<h1>" <> T.concat (map renderInline line) <> "</h1>"
 renderBlock (Heading Two line) = "<h2>" <> T.concat (map renderInline line) <> "</h2>"
 renderBlock (Paragraph line) = "<p>" <> T.concat (map renderInline line) <> "</p>"
-renderBlock (CodeBlock line) = "<pre><code>" <> T.intercalate "\n" line <> "</code></pre>"
+renderBlock (CodeBlock line) = "<pre><code>" <> escapeSpecialChars(T.intercalate "\n" line) <> "</code></pre>"
 
 renderInline :: Inline -> Text
-renderInline (Plain line) = line
-renderInline (Code line) = "<code>" <> line <> "</code>"
+renderInline (Plain line) = escapeSpecialChars line
+renderInline (Code line) = "<code>" <> escapeSpecialChars line <> "</code>"
 renderInline (Strong line) = "<strong>" <> T.concat (map renderInline line) <> "</strong>"
+
+escapeSpecialChars :: Text -> Text
+escapeSpecialChars chars = T.replace "<" "&lt;"
+                         $ T.replace ">" "&gt;" chars

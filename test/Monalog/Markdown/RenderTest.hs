@@ -31,6 +31,9 @@ tests =
       testCase "p code" $
         renderHTML [Paragraph [Plain "paragraph", Code "code"]]
           @?= "<p>paragraph<code>code</code></p>",
+      testCase "escape" $
+        renderHTML [Paragraph [Plain "<>"]]
+          @?= "<p>&lt;&gt;</p>",
       testCase "full" $
         renderHTML
           [ Heading Two [Plain "Head"],

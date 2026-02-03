@@ -15,6 +15,7 @@ import Data.Text.Encoding
 import Data.Text.IO qualified as TO
 import Monalog.Markdown.Parser
 import Monalog.Markdown.Render
+import Monalog.Router
 import Network.Socket
 import Network.Socket.ByteString
 
@@ -36,8 +37,18 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     putStrLn $ "接続: " ++ show addr
 
     -- リクエスト・メッセージを読み取る（読み取らないと即切断になりRecv failure: Connection reset by peerが出る）
-    msg <- recv conn 1024
-    print msg
+    requestData <- recv conn 1024
+    print requestData
+
+    -- ルーティング処理（まだ何もしてない）
+    case parseRequest requestData of
+      Nothing -> print "Nothing"
+      Just r
+        -- レコードフィールドの呼び出しはgetter関数が自動生成される
+        -- つまり path r は path 関数に r を引数で渡している
+        | path r == "/" -> print "Top Page"
+        | "/a/" `B.isPrefixOf` path r -> print "Article Page"
+        | otherwise -> print "Nothing"
 
     -- HTMLテンプレートとブログ記事Markdownを読み込む
     -- ByteStringだと文字列操作が煩雑なので、ByteStringを継承する？Textを利用する

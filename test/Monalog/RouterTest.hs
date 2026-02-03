@@ -21,11 +21,11 @@ tests =
                 headers = []
               },
       testCase "Article Page" $
-        parseRequest (encodeUtf8 "GET /s/202601011223 HTTP/1.1\r\n")
+        parseRequest (encodeUtf8 "GET /a/202601011223 HTTP/1.1\r\n")
           @?= Just
             HttpRequest
               { method = GET,
-                path = encodeUtf8 "/s/202601011223",
+                path = encodeUtf8 "/a/202601011223",
                 version = encodeUtf8 "HTTP/1.1",
                 headers = []
               },

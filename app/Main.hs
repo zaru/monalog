@@ -10,11 +10,9 @@ module Main where
 import Control.Exception (bracket)
 import Control.Monad (forever)
 import Data.ByteString.Char8 qualified as B
-import Data.Text qualified as T
-import Data.Text.Encoding
-import Data.Text.IO qualified as TO
-import Monalog.Markdown.Parser
-import Monalog.Markdown.Render
+import Monalog.Page.ArticlePage
+import Monalog.Page.IndexPage
+import Monalog.Page.RenderPage
 import Monalog.Router
 import Network.Socket
 import Network.Socket.ByteString
@@ -40,33 +38,16 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     requestData <- recv conn 1024
     print requestData
 
-    -- ルーティング処理（まだ何もしてない）
-    case parseRequest requestData of
-      Nothing -> print "Nothing"
+    -- ルーティング処理
+    responseData <- case parseRequest requestData of
+      Nothing -> renderPage "Not Found"
       Just r
         -- レコードフィールドの呼び出しはgetter関数が自動生成される
         -- つまり path r は path 関数に r を引数で渡している
-        | path r == "/" -> print "Top Page"
-        | "/a/" `B.isPrefixOf` path r -> print "Article Page"
-        | otherwise -> print "Nothing"
-
-    -- HTMLテンプレートとブログ記事Markdownを読み込む
-    -- ByteStringだと文字列操作が煩雑なので、ByteStringを継承する？Textを利用する
-    -- など、System IOのreadFileだと日本語が文字化する
-    template <- TO.readFile "./html/index.html"
-    mdFile <- TO.readFile "./html/index.md"
-    -- Markdownをパースして文字列結合する
-    let body = renderHTML $ parseMarkdown mdFile
-    -- テンプレートを置き換え
-    let html = T.replace "{__INDEX__}" body template
-    -- 送信データサイズを計算する
-    let len = T.show $ B.length $ encodeUtf8 html
-    -- ヘッダーを送信しないとブラウザで表示されない
-    let header = "HTTP/1.1 200 OK\r\nContent-Length: " <> len <> "\r\nContent-Type: text/html\r\n\r\n"
-    -- sendAllでヘッダとボディのByteStringを結合して返す
-    -- TextはText.encode.encodeUtf8でByteStringに変換できる
-    sendAll conn $ encodeUtf8 $ T.concat [header, html]
-
+        | path r == "/" -> renderIndexPage
+        | "/a/" `B.isPrefixOf` path r -> renderArticlePage (path r)
+        | otherwise -> renderPage "Not Found"
+    sendAll conn responseData
     close conn
 
 -- PortNumberを引数とし、Scoket型のIOコンストラクタを返す関数定義

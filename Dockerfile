@@ -11,4 +11,5 @@ ENV LANG C.UTF-8
 WORKDIR /app
 COPY --from=builder /app/artifacts/monalog /usr/local/bin/monalog
 COPY --from=builder /app/html /app/html
+COPY --from=builder /app/data /app/data
 ENTRYPOINT ["/usr/local/bin/monalog"]

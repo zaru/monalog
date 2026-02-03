@@ -1,5 +1,6 @@
 import Monalog.Markdown.ParserTest qualified
 import Monalog.Markdown.RenderTest qualified
+import Monalog.RouterTest qualified
 import Test.Tasty
 
 main :: IO ()
@@ -8,5 +9,6 @@ main =
     testGroup
       "All Tests"
       [ Monalog.Markdown.ParserTest.tests,
-        Monalog.Markdown.RenderTest.tests
+        Monalog.Markdown.RenderTest.tests,
+        Monalog.RouterTest.tests
       ]

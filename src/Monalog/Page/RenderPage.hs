@@ -8,17 +8,15 @@ import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding
 import Data.Text.IO qualified as TO
-import Monalog.Markdown.Parser
-import Monalog.Markdown.Render
 
-renderPage :: Text -> IO ByteString
-renderPage content = do
+renderPage :: FilePath -> Text -> IO ByteString
+renderPage templatePath content = do
   -- HTMLテンプレートとブログ記事Markdownを読み込む
   -- ByteStringだと文字列操作が煩雑なので、ByteStringを継承する？Textを利用する
   -- など、System IOのreadFileだと日本語が文字化する
-  template <- TO.readFile "./html/index.html"
+  template <- TO.readFile templatePath
   -- テンプレートを置き換え
-  let html = T.replace "{__INDEX__}" content template
+  let html = T.replace "{__MAIN__}" content template
   -- 送信データサイズを計算する
   let len = T.show $ B.length $ encodeUtf8 html
   -- ヘッダーを送信しないとブラウザで表示されない

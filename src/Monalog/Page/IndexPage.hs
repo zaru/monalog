@@ -17,7 +17,7 @@ renderIndexPage :: IO ByteString
 renderIndexPage = do
   files <- listAricleFile
   articles <- mapM renderArticle files
-  renderPage $ T.concat articles
+  renderPage "./html/index.html" $ T.concat articles
 
 renderArticle :: String -> IO Text
 renderArticle filename = do

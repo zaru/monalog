@@ -14,11 +14,11 @@ import Monalog.Page.RenderPage
 renderArticlePage :: ByteString -> IO ByteString
 renderArticlePage path = do
   case extractArticleId path of
-    Nothing -> renderPage "Not Found"
+    Nothing -> renderPage "./html/index.html" "Not Found"
     Just articleId -> do
       mdFile <- TO.readFile $ T.unpack ("./data/" <> decodeUtf8 articleId <> ".md")
       let content = renderHTML $ parseMarkdown mdFile
-      renderPage content
+      renderPage "./html/article.html" content
 
 extractArticleId :: ByteString -> Maybe ByteString
 extractArticleId = B.stripPrefix "/a/"

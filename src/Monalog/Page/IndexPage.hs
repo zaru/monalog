@@ -12,6 +12,7 @@ import Monalog.Markdown.Parser
 import Monalog.Markdown.Render
 import Monalog.Page.RenderPage
 import System.Directory
+import Data.Maybe
 
 renderIndexPage :: IO ByteString
 renderIndexPage = do
@@ -22,7 +23,7 @@ renderIndexPage = do
 renderArticle :: String -> IO Text
 renderArticle filename = do
   mdFile <- TO.readFile $ "./data/" <> filename
-  pure $ renderHTML $ parseMarkdown mdFile
+  pure $ renderHTML (Just $ "/a/" <> fromJust (T.stripSuffix ".md" $ T.pack filename)) $ parseMarkdown mdFile
 
 listAricleFile :: IO [String]
 listAricleFile = sortOn Down . filter (`notElem` [".", ".."]) <$> getDirectoryContents "./data/"

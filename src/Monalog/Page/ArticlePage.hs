@@ -17,7 +17,7 @@ renderArticlePage path = do
     Nothing -> renderPage "./html/index.html" "Not Found"
     Just articleId -> do
       mdFile <- TO.readFile $ T.unpack ("./data/" <> decodeUtf8 articleId <> ".md")
-      let content = renderHTML $ parseMarkdown mdFile
+      let content = renderHTML Nothing $ parseMarkdown mdFile
       renderPage "./html/article.html" content
 
 extractArticleId :: ByteString -> Maybe ByteString

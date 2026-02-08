@@ -14,28 +14,29 @@ tests =
   testGroup
     "Markdown Render"
     [ testCase "empty" $
-        renderHTML []
+        renderHTML Nothing []
           @?= "",
       testCase "h2" $
-        renderHTML [Heading Two [Plain "head2"]]
+        renderHTML Nothing [Heading Two [Plain "head2"]]
           @?= "<h2>head2</h2>",
       testCase "p" $
-        renderHTML [Paragraph [Plain "paragraph"]]
+        renderHTML Nothing [Paragraph [Plain "paragraph"]]
           @?= "<p>paragraph</p>",
       testCase "code block" $
-        renderHTML [CodeBlock ["code", "block"]]
+        renderHTML Nothing [CodeBlock ["code", "block"]]
           @?= "<pre><code>code\nblock</code></pre>",
       testCase "h2 code" $
-        renderHTML [Heading Two [Plain "paragraph", Code "code"]]
+        renderHTML Nothing [Heading Two [Plain "paragraph", Code "code"]]
           @?= "<h2>paragraph<code>code</code></h2>",
       testCase "p code" $
-        renderHTML [Paragraph [Plain "paragraph", Code "code"]]
+        renderHTML Nothing [Paragraph [Plain "paragraph", Code "code"]]
           @?= "<p>paragraph<code>code</code></p>",
       testCase "escape" $
-        renderHTML [Paragraph [Plain "<>"]]
+        renderHTML Nothing [Paragraph [Plain "<>"]]
           @?= "<p>&lt;&gt;</p>",
       testCase "full" $
         renderHTML
+          Nothing
           [ Heading Two [Plain "Head"],
             Paragraph [Plain "paragraph"],
             Paragraph [Plain "foo ", Code "code1", Plain " bar ", Code "code2"],

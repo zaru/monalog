@@ -74,11 +74,12 @@ parseLink text =
   case T.breakOn "]" (T.drop 1 text) of
     (_, "") -> [Plain text]
     (label, next) ->
-      case T.isPrefixOf "(" (T.drop 1 next) of
-        False -> trace ("false") $ [Plain text]
-        True ->
-          case T.breakOn ")" (T.drop 2 next) of
+      case T.stripPrefix "(" (T.drop 1 next) of
+        Nothing -> [Plain text]
+        Just third ->
+          case T.breakOn ")" third of
             (_, "") -> [Plain text]
             (url, rest) -> Link (label, url) : parseInline (T.drop 1 rest)
+
 
 -- parseMarkdown "## h2\np1\np2`code1`bar`code2`desu\n```\nthis\nis block\n```\nlast"

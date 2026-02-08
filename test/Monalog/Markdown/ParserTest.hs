@@ -25,6 +25,12 @@ tests =
       testCase "p code" $
         parseMarkdown "p `code` text"
           @?= [Paragraph [Plain "p ", Code "code", Plain " text"]],
+      testCase "link" $
+        parseMarkdown "[label](http://example.com)"
+          @?= [Paragraph [Link ("label", "http://example.com")]],
+      testCase "link in paragraph" $
+        parseMarkdown "foo [label](http://example.com) bar"
+          @?= [Paragraph [Plain "foo ", Link ("label", "http://example.com"), Plain " bar"]],
       testCase "full" $
         parseMarkdown "## Head\nparagraph\nfoo `code1` bar `code2`\n```\ncode\nblock\n```\nfooter"
           @?= [ Heading Two [Plain "Head"],

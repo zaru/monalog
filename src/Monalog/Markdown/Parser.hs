@@ -11,6 +11,7 @@ data Inline
   = Plain Text
   | Code Text
   | Strong [Inline] -- 再帰にして<strong>内に他のInlineを埋め込めるようにする
+  | Link (Text, Text)
   deriving (Show, Eq)
 
 data Level = One | Two deriving (Show, Eq)
@@ -38,7 +39,7 @@ parseLines (currentLine : restLines)
 
 -- Markdown特殊文字判定
 isSpecialChar :: Char -> Bool
-isSpecialChar c = c == '`' || c == '*'
+isSpecialChar c = c == '`' || c == '*' || c == '['
 
 -- 1行テキストをパースする
 parseInline :: Text -> [Inline]
@@ -58,6 +59,7 @@ parseSpecial text =
       case c of
         '`' -> parseCode text
         '*' -> [Strong [Plain text]] -- TODO
+        '[' -> parseLink text
         _ -> Plain (T.singleton c) : parseInline next
 
 -- ` 始まりのテキストがわたる
@@ -66,5 +68,17 @@ parseCode text =
   case T.breakOn "`" (T.drop 1 text) of
     (_, "") -> [Plain text] -- 閉じタグなしなのでPlain
     (code, next) -> Code code : parseInline (T.drop 1 next)
+
+parseLink :: Text -> [Inline]
+parseLink text =
+  case T.breakOn "]" (T.drop 1 text) of
+    (_, "") -> [Plain text]
+    (label, next) ->
+      case T.isPrefixOf "(" (T.drop 1 next) of
+        False -> trace ("false") $ [Plain text]
+        True ->
+          case T.breakOn ")" (T.drop 2 next) of
+            (_, "") -> [Plain text]
+            (url, rest) -> Link (label, url) : parseInline (T.drop 1 rest)
 
 -- parseMarkdown "## h2\np1\np2`code1`bar`code2`desu\n```\nthis\nis block\n```\nlast"

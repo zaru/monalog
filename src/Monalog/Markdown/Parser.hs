@@ -6,6 +6,8 @@ module Monalog.Markdown.Parser (parseMarkdown, Markdown, Block (..), Inline (..)
 
 import Data.Text (Text) -- Text型だけエイリアスなしで使えるようにする
 import Data.Text qualified as T -- それ以外はPreludeとかぶらないようにエイリアス
+import Data.Maybe
+import Control.Monad
 
 data Inline
   = Plain Text
@@ -70,16 +72,13 @@ parseCode text =
     (code, next) -> Code code : parseInline (T.drop 1 next)
 
 parseLink :: Text -> [Inline]
-parseLink text =
-  case T.breakOn "]" (T.drop 1 text) of
-    (_, "") -> [Plain text]
-    (label, next) ->
-      case T.stripPrefix "(" (T.drop 1 next) of
-        Nothing -> [Plain text]
-        Just third ->
-          case T.breakOn ")" third of
-            (_, "") -> [Plain text]
-            (url, rest) -> Link (label, url) : parseInline (T.drop 1 rest)
+parseLink text = fromMaybe [Plain text] $ do
+  let (label, next) = T.breakOn "]" (T.drop 1 text)
+  guard (not $ T.null next)
+  third <- T.stripPrefix "(" (T.drop 1 next)
+  let (url, rest) = T.breakOn ")" third
+  guard (not $ T.null rest)
+  pure $ Link (label, url) : parseInline (T.drop 1 rest)
 
 
 -- parseMarkdown "## h2\np1\np2`code1`bar`code2`desu\n```\nthis\nis block\n```\nlast"

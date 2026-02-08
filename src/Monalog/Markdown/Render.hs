@@ -24,6 +24,7 @@ renderInline :: Inline -> Text
 renderInline (Plain line) = escapeSpecialChars line
 renderInline (Code line) = "<code>" <> escapeSpecialChars line <> "</code>"
 renderInline (Strong line) = "<strong>" <> T.concat (map renderInline line) <> "</strong>"
+renderInline (Link (label, url)) = "<a href='" <> url <> "'>" <> escapeSpecialChars label <> "</a>"
 
 escapeSpecialChars :: Text -> Text
 escapeSpecialChars chars =

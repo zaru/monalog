@@ -73,12 +73,21 @@ parseCode text =
 
 parseLink :: Text -> [Inline]
 parseLink text = fromMaybe [Plain text] $ do
-  let (label, next) = T.breakOn "]" (T.drop 1 text)
-  guard (not $ T.null next)
-  third <- T.stripPrefix "(" (T.drop 1 next)
-  let (url, rest) = T.breakOn ")" third
-  guard (not $ T.null rest)
+  (label, afterLabel) <- extractLinkLabel text
+  (url, rest) <- extractLinkUrl afterLabel
   pure $ Link (label, url) : parseInline (T.drop 1 rest)
 
+extractLinkLabel :: Text -> Maybe (Text, Text)
+extractLinkLabel text = do
+  let (label, next) = T.breakOn "]" (T.drop 1 text)
+  guard (not $ T.null next)
+  pure (label, next)
+
+extractLinkUrl :: Text -> Maybe (Text, Text)
+extractLinkUrl text = do
+  next <- T.stripPrefix "(" (T.drop 1 text)
+  let (url, rest) = T.breakOn ")" next
+  guard (not $ T.null rest)
+  pure (url, rest)
 
 -- parseMarkdown "## h2\np1\np2`code1`bar`code2`desu\n```\nthis\nis block\n```\nlast"

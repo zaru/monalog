@@ -8,6 +8,11 @@ RUN cabal update && \
 
 FROM debian:bullseye-slim
 ENV LANG C.UTF-8
+ARG REDIS_HOST
+ARG REDIS_PORT
+ARG REDIS_PASSWORD
+ARG APP_ENV
+
 WORKDIR /app
 COPY --from=builder /app/artifacts/monalog /usr/local/bin/monalog
 COPY --from=builder /app/html /app/html

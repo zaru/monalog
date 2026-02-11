@@ -35,7 +35,7 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
     putStrLn $ "接続: " ++ show addr
 
     -- リクエスト・メッセージを読み取る（読み取らないと即切断になりRecv failure: Connection reset by peerが出る）
-    requestData <- recv conn 1024
+    requestData <- recv conn 4048
     print requestData
 
     -- ルーティング処理

@@ -40,13 +40,13 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
 
     -- ルーティング処理
     responseData <- case parseRequest requestData of
-      Nothing -> renderPage "./html/index.html" "Not Found"
+      Nothing -> renderPage "./html/index.html" [("MAIN", "Not Found")]
       Just r
         -- レコードフィールドの呼び出しはgetter関数が自動生成される
         -- つまり path r は path 関数に r を引数で渡している
         | path r == "/" -> renderIndexPage
         | "/a/" `B.isPrefixOf` path r -> renderArticlePage (path r)
-        | otherwise -> renderPage "./html/index.html" "Not Found"
+        | otherwise -> renderPage "./html/index.html" [("MAIN", "Not Found")]
     sendAll conn responseData
     close conn
 

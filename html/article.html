@@ -40,10 +40,18 @@
         color: inherit;
         border: none;
       }
+      .counter {
+        text-align: right;
+        font-size: 0.9rem;
+        strong {
+          font-weight: bold;
+        }
+      }
     </style>
   </head>
   <body>
     <h1>Monalog</h1>
+    <div class="counter"><strong>{__COUNTER__}</strong>人のHaskell好きが訪れました</div>
     <article>
     {__MAIN__}
     </article>

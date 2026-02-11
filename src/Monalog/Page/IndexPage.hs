@@ -18,7 +18,7 @@ import System.Directory
 renderIndexPage :: IO ByteString
 renderIndexPage = do
   files <- listAricleFile
-  articles <- mapM renderArticle files
+  articles <- mapM renderArticle $ take 3 files
   count <- countup
   renderPage "./html/index.html" $ [("MAIN", T.concat articles), ("COUNTER", count)]
 

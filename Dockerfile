@@ -7,11 +7,12 @@ RUN cabal update && \
                               --installdir=/app/artifacts
 
 FROM debian:bullseye-slim
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV LANG C.UTF-8
-ARG REDIS_HOST
-ARG REDIS_PORT
-ARG REDIS_PASSWORD
-ARG APP_ENV
 
 WORKDIR /app
 COPY --from=builder /app/artifacts/monalog /usr/local/bin/monalog

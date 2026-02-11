@@ -35,15 +35,13 @@ countup = do
   -- 認証コマンド
   let authCmd = C.pack $ "*2\r\n$4\r\nAUTH\r\n$" ++ show (length pass) ++ "\r\n" ++ pass ++ "\r\n"
   connectionPut conn authCmd
-  authRes <- connectionGet conn 4096
-  C.putStrLn $ C.pack "TLS Response: " <> authRes
+  _authRes <- connectionGet conn 4096
 
   -- カウントアップ
   let counterKey = appEnv ++ "_counter"
   let incrCmd = "*2\r\n$4\r\nINCR\r\n$" ++ show (length counterKey) ++ "\r\n" ++ counterKey ++ "\r\n"
   connectionPut conn $ C.pack incrCmd
   response <- connectionGet conn 4096
-  C.putStrLn $ C.pack "Keys Response: " <> response
 
   connectionClose conn
 

@@ -45,6 +45,7 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
         -- レコードフィールドの呼び出しはgetter関数が自動生成される
         -- つまり path r は path 関数に r を引数で渡している
         | path r == "/" -> renderIndexPage
+        | path r == "/health" -> renderPage "./html/index.html" [("MAIN", "OK")]
         | "/a/" `B.isPrefixOf` path r -> renderArticlePage (path r)
         | otherwise -> renderPage "./html/index.html" [("MAIN", "Not Found")]
     sendAll conn responseData

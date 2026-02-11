@@ -16,7 +16,6 @@ import Monalog.Page.RenderPage
 import Monalog.Router
 import Network.Socket
 import Network.Socket.ByteString
-import System.Environment
 
 -- ()はvoid相当、ここではなにも入ってないIOを返すmain関数である
 main :: IO ()
@@ -24,11 +23,6 @@ main :: IO ()
 -- 関数定義 → bracket リソース確保 リソース解放 リソースを使った処理
 -- \sockのバックスラッシュはラムダ式の始まりを表す do 式のサーバ処理をラムダとして渡している
 main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
-  host <- getEnv "REDIS_HOST"
-  port <- getEnv "REDIS_PORT"
-  pass <- getEnv "REDIS_PASSWORD"
-  appEnv <- getEnv "APP_ENV"
-
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue
   putStrLn "Starting Monalog http://localhost:8000"

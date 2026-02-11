@@ -14,6 +14,7 @@ countup = do
   host <- getEnv "REDIS_HOST"
   port <- getEnv "REDIS_PORT"
   pass <- getEnv "REDIS_PASSWORD"
+  appEnv <- getEnv "APP_ENV"
 
   -- 接続コンテキストの作成
   ctx <- initConnectionContext
@@ -38,7 +39,9 @@ countup = do
   C.putStrLn $ C.pack "TLS Response: " <> authRes
 
   -- カウントアップ
-  connectionPut conn (C.pack "*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n")
+  let counterKey = appEnv ++ "_counter"
+  let incrCmd = "*2\r\n$4\r\nINCR\r\n$" ++ show (length counterKey) ++ "\r\n" ++ counterKey ++ "\r\n"
+  connectionPut conn $ C.pack incrCmd
   response <- connectionGet conn 4096
   C.putStrLn $ C.pack "Keys Response: " <> response
 

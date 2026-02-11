@@ -23,6 +23,15 @@ main :: IO ()
 -- 関数定義 → bracket リソース確保 リソース解放 リソースを使った処理
 -- \sockのバックスラッシュはラムダ式の始まりを表す do 式のサーバ処理をラムダとして渡している
 main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
+  host <- getEnv "REDIS_HOST"
+  port <- getEnv "REDIS_PORT"
+  pass <- getEnv "REDIS_PASSWORD"
+  appEnv <- getEnv "APP_ENV"
+  putStrLn host
+  putStrLn port
+  putStrLn pass
+  putStrLn appEnv
+
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue
   putStrLn "Starting Monalog http://localhost:8000"

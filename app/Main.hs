@@ -28,10 +28,6 @@ main = withSocketsDo $ bracket (serveSocket 8000) close $ \sock -> do
   port <- getEnv "REDIS_PORT"
   pass <- getEnv "REDIS_PASSWORD"
   appEnv <- getEnv "APP_ENV"
-  putStrLn host
-  putStrLn port
-  putStrLn pass
-  putStrLn appEnv
 
   -- listenは指定ソケットで待機接続数を指定
   listen sock maxListenQueue

@@ -25,7 +25,7 @@ renderArticlePage path = do
       let (title, body) = parseMarkdownPage mdFile
       let content = renderHTML body
       count <- countup
-      renderPage "./html/article.html" [("TITLE", title), ("MAIN", content), ("COUNTER", count)]
+      renderPage "./html/article.html" [("TITLE", escapeSpecialChars title), ("MAIN", content), ("COUNTER", count)]
 
 extractArticleId :: ByteString -> Maybe ByteString
 extractArticleId = B.stripPrefix "/a/"

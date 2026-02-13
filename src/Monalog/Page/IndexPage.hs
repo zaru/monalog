@@ -27,7 +27,7 @@ renderArticle filename = do
   mdFile <- TO.readFile $ "./data/" <> filename
   let (title, _) = parseMarkdownPage mdFile
   let path = "/a/" <> fromJust (T.stripSuffix ".md" $ T.pack filename)
-  pure $ "<li><a href='" <> path <> "'>" <> title <> "</a></li>"
+  pure $ "<li><a href='" <> path <> "'>" <> escapeSpecialChars title <> "</a></li>"
 
 listAricleFile :: IO [String]
 listAricleFile = sortOn Down . filter (`notElem` [".", ".."]) <$> getDirectoryContents "./data/"

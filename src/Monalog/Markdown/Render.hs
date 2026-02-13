@@ -15,7 +15,7 @@ renderHTML markdown = T.concat $ map renderBlock markdown
 renderBlock :: Block -> Text
 renderBlock (Heading One line) = "<h1>" <> T.concat (map renderInline line) <> "</h1>"
 renderBlock (Heading Two line) = "<h2>" <> T.concat (map renderInline line) <> "</h2>"
-renderBlock (Paragraph line) = "<p>" <> T.concat (map renderInline line) <> "</p>"
+renderBlock (Paragraph line) = "<p>" <>  T.concat (map renderInline line) <> "</p>"
 renderBlock (CodeBlock line) = "<pre><code>" <> escapeSpecialChars (T.intercalate "\n" line) <> "</code></pre>"
 
 renderInline :: Inline -> Text

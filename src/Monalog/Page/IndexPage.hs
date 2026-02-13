@@ -22,10 +22,12 @@ renderIndexPage = do
   count <- countup
   renderPage "./html/index.html" $ [("MAIN", T.concat articles), ("COUNTER", count)]
 
-renderArticle :: String -> IO Text
+renderArticle :: String -> IO PageTitle
 renderArticle filename = do
   mdFile <- TO.readFile $ "./data/" <> filename
-  pure $ renderHTML (Just $ "/a/" <> fromJust (T.stripSuffix ".md" $ T.pack filename)) $ parseMarkdown mdFile
+  let (title, _) = parseMarkdownPage mdFile
+  let path = "/a/" <> fromJust (T.stripSuffix ".md" $ T.pack filename)
+  pure $ "<li><a href='" <> path <> "'>" <> title <> "</a></li>"
 
 listAricleFile :: IO [String]
 listAricleFile = sortOn Down . filter (`notElem` [".", ".."]) <$> getDirectoryContents "./data/"

@@ -8,17 +8,15 @@ import Monalog.Markdown.Parser
 
 type Link = Text
 
-renderHTML :: Maybe Link -> Markdown -> Text
-renderHTML _ [] = ""
-renderHTML Nothing markdown = T.concat $ map (renderBlock Nothing) markdown
-renderHTML (Just link) markdown = T.concat $ map (renderBlock $ Just link) markdown
+renderHTML :: Markdown -> Text
+renderHTML [] = ""
+renderHTML markdown = T.concat $ map renderBlock markdown
 
-renderBlock :: Maybe Link -> Block -> Text
-renderBlock _ (Heading One line) = "<h1>" <> T.concat (map renderInline line) <> "</h1>"
-renderBlock Nothing (Heading Two line) = "<h2>" <> T.concat (map renderInline line) <> "</h2>"
-renderBlock (Just link) (Heading Two line) = "<h2><a href='" <> link <> "'>" <> T.concat (map renderInline line) <> "</a></h2>"
-renderBlock _ (Paragraph line) = "<p>" <> T.concat (map renderInline line) <> "</p>"
-renderBlock _ (CodeBlock line) = "<pre><code>" <> escapeSpecialChars (T.intercalate "\n" line) <> "</code></pre>"
+renderBlock :: Block -> Text
+renderBlock (Heading One line) = "<h1>" <> T.concat (map renderInline line) <> "</h1>"
+renderBlock (Heading Two line) = "<h2>" <> T.concat (map renderInline line) <> "</h2>"
+renderBlock (Paragraph line) = "<p>" <> T.concat (map renderInline line) <> "</p>"
+renderBlock (CodeBlock line) = "<pre><code>" <> escapeSpecialChars (T.intercalate "\n" line) <> "</code></pre>"
 
 renderInline :: Inline -> Text
 renderInline (Plain line) = escapeSpecialChars line

@@ -2,12 +2,15 @@
 
 -- Markdownの型をエクスポート
 -- (..)で指定型のすべてのコンストラクタをエクスポートできる
-module Monalog.Markdown.Parser (parseMarkdown, Markdown, Block (..), Inline (..), Level (..)) where
+module Monalog.Markdown.Parser (parseMarkdownPage, parseMarkdown, MarkdownPage, PageTitle, Markdown, Block (..), Inline (..), Level (..)) where
 
-import Data.Text (Text) -- Text型だけエイリアスなしで使えるようにする
-import Data.Text qualified as T -- それ以外はPreludeとかぶらないようにエイリアス
-import Data.Maybe
+-- Text型だけエイリアスなしで使えるようにする
+-- それ以外はPreludeとかぶらないようにエイリアス
+
 import Control.Monad
+import Data.Maybe
+import Data.Text (Text)
+import Data.Text qualified as T
 
 data Inline
   = Plain Text
@@ -25,6 +28,16 @@ data Block
   deriving (Show, Eq)
 
 type Markdown = [Block]
+
+type PageTitle = Text
+
+type MarkdownPage = (PageTitle, Markdown)
+
+parseMarkdownPage :: Text -> MarkdownPage
+parseMarkdownPage input =
+  case T.lines input of
+    (x : xs) -> (T.drop 2 x, parseLines xs)
+    [] -> ("", [])
 
 parseMarkdown :: Text -> Markdown
 parseMarkdown input = parseLines $ T.lines input

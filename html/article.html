@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Monalog</title>
+    <title>{__TITLE__} Monalog</title>
     <style>
       body {
         font-size: 1.1rem;
@@ -18,6 +18,11 @@
       a, a:visited {
         color: #0369a1;
         text-decoration: none;
+        border-bottom: 2px solid #0369a1;
+        transition: all 0.2s;
+      }
+      a:hover {
+        border-bottom: 0;
       }
       code {
         font-family: monospace;
@@ -40,6 +45,10 @@
         color: inherit;
         border: none;
       }
+      .sitename {
+        font-size: 1.6rem;
+        margin: 0.2rem 0;
+      }
       .counter {
         text-align: right;
         font-size: 0.9rem;
@@ -50,10 +59,11 @@
     </style>
   </head>
   <body>
-    <h1>Monalog</h1>
+    <h1 class="sitename">Monalog</h1>
     <div class="counter"><strong>{__COUNTER__}</strong>人のHaskell好きが訪れました</div>
     <article>
-    {__MAIN__}
+      <h1>{__TITLE__}</h1>
+      {__MAIN__}
     </article>
     <div>
       <p><a href="/">戻る</a></p>
